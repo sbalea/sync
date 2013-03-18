@@ -130,7 +130,7 @@ handle_cast(discover_src_dirs, State) ->
             {ok, Dir} ->
                 %% Get the options, store under the dir...
                 {ok, Options1} = sync_utils:get_options_from_module(X),
-                Options2 = sync_utils:transform_options(Dir, Options1),
+                Options2 = sync_utils:transform_options(X, Dir, Options1),
 
                 %% Store the options for later reference...
                 sync_options:set_options(Dir, Options2),
@@ -162,6 +162,7 @@ handle_cast(discover_src_files, State) ->
 
     %% Return with updated files...
     NewState = State#state { src_files=Files, timers=NewTimers },
+
     {noreply, NewState};
 
 handle_cast(compare_beams, State) ->

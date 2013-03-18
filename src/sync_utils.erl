@@ -7,7 +7,7 @@
          get_env/2,
          set_env/2,
          file_last_modified_time/1,
-         transform_options/2,
+         transform_options/3,
          get_system_modules/0
 ]).
 
@@ -108,7 +108,7 @@ file_last_modified_time(File) ->
 
 %% @private Walk through each option. If it's an include or outdir option, then
 %% rewrite the path...
-transform_options(SrcDir, Options) ->
+transform_options(Module, SrcDir, Options) ->
     F = fun(Option, Acc) ->
         case Option of
             {i, IncludeDir1} ->
@@ -121,8 +121,13 @@ transform_options(SrcDir, Options) ->
         end
     end,
 
-    LastPart = hd(lists:reverse(filename:split(proplists:get_value(outdir, Options, "./ebin")))),
-    BinDir = filename:join([SrcDir, "..", LastPart]),
+    BinDir = case code:which(Module) of
+        X when is_atom(X) ->
+            LastPart = hd(lists:reverse(filename:split(proplists:get_value(outdir, Options, "./ebin")))),
+            filename:join([SrcDir, "..", LastPart]);
+        P when is_list(P) ->
+            filename:dirname(P)
+    end,
     lists:foldl(F, [], Options) ++ [{outdir, BinDir}].
 
 
